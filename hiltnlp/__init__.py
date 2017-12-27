@@ -90,7 +90,7 @@ def get_sentences(annotation_file):
     return sentences
 
 def get_turns(sentences,
-                  overwrite=False):
+              overwrite=False):
     sentences = sorted(
         sentences,
         key=lambda x: x.start_node,
