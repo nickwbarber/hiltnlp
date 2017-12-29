@@ -4,6 +4,36 @@ import gatenlp
 import collections
 
 
+first_reference_words = [
+    "i",
+    "me",
+    "my",
+    "mine",
+    "myself",
+    "we",
+    "us",
+    "our",
+    "ours",
+    "ourselves",
+]
+second_reference_words = [
+    "you",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
+]
+third_reference_words = [
+    "he",
+    "him",
+    "himself",
+    "his",
+    "she",
+    "her",
+    "herself",
+    "hers",
+]
+
 class Turn:
     def __init__(self,
                  sentences):
@@ -80,6 +110,23 @@ def is_complete(sentence):
 def is_turn_head(sentence):
     return sentence.features["Turn_head"].value == "True"
 
+def is_explicit_person_reference(token):
+    return bool(
+        token.text.lower() in (
+            first_reference_words
+            + second_reference_words
+            + third_reference_words
+        )
+    )
+
+def get_grammatical_person(person_token):
+    if person_token.text.lower() in first_reference_words:
+        return 1
+    if person_token.text.lower() in second_reference_words:
+        return 2
+    if person_token.text.lower() in third_reference_words:
+        return 3
+
 def get_sentences(annotation_file):
     sentences = [
         annotation
@@ -88,6 +135,18 @@ def get_sentences(annotation_file):
     ]
     gatenlp.dlink(sentences)
     return sentences
+
+def get_intersecting_of_type(annotation,
+                             annotation_type):
+    tree = annotation.annotation_file.interval_tree
+    return [
+        intersecting_annotation
+        for intersecting_annotation in tree.search(annotation)
+        if intersecting_annotation.type == annotation_type
+    ]
+
+def get_tokens(annotation):
+    return get_intersecting_of_type(annotation, "Token")
 
 def get_turns(sentences,
               overwrite=False):
