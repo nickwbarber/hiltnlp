@@ -3,6 +3,8 @@
 import gatenlp
 import collections
 
+from . import cause_tagger
+
 
 first_reference_words = [
     "i",
@@ -43,7 +45,10 @@ class Turn:
         self._speaker = get_speaker(self.sentences[0])
 
     def __str__(self):
-        return "\n".join(sentence.text for sentence in self.sentences)
+        return "\n".join(
+            sentence.text
+            for sentence in self.sentences
+        )
 
     def __repr__(self):
         sentences_string = str(self.sentences)
@@ -90,22 +95,26 @@ class Turn:
     def next(self, turn):
         if turn:
             if type(turn) != type(self):
-                raise TypeError("'next' attribute must be same type")
+                raise TypeError(
+                    "'next' attribute must be same type"
+                )
         self._next = turn
 
     @previous.setter
     def previous(self, turn):
         if turn:
             if type(turn) != type(self):
-                raise TypeError("'previous' attribute must be same type")
+                raise TypeError(
+                    "'previous' attribute must be same type"
+                )
         self._previous = turn
 
 def get_speaker(sentence):
     return sentence.features["Speaker"].value
 
+# TODO: complete is_complete
 def is_complete(sentence):
     pass
-    return is_complete
 
 def is_turn_head(sentence):
     return sentence.features["Turn_head"].value == "True"
@@ -145,8 +154,17 @@ def get_intersecting_of_type(annotation,
         if intersecting_annotation.type == annotation_type
     ]
 
-def get_tokens(annotation):
-    return get_intersecting_of_type(annotation, "Token")
+def get_tokens(annotation_or_annotation_file):
+    if type(annotation_or_annotation_file) == gatenlp.AnnotationFile:
+        annotation_file = annotation_or_annotation_file
+        return [
+            annotation
+            for annotation in annotation_file.annotations
+            if annotation.type == "Token"
+        ]
+    if type(annotation_or_annotation_file) == gatenlp.Annotation:
+        annotation = annotation_or_annotation_file
+        return get_intersecting_of_type(annotation, "Token")
 
 def get_turns(sentences,
               overwrite=False):
@@ -196,29 +214,57 @@ def tag_turns(sentences,
 
     for sentence in sentences:
         if get_speaker(sentence) == "None":
-            sentence.add_feature("Turn_head", "False", overwrite=overwrite)
+            sentence.add_feature(
+                "Turn_head",
+                "False",
+                overwrite=overwrite,
+            )
             continue
 
         if not sentence.previous:
-            sentence.add_feature("Turn_head", "True", overwrite=overwrite)
+            sentence.add_feature(
+                "Turn_head",
+                "True",
+                overwrite=overwrite,
+            )
             continue
         if not sentence.previous.previous:
-            sentence.add_feature("Turn_head", "True", overwrite=overwrite)
+            sentence.add_feature(
+                "Turn_head",
+                "True",
+                overwrite=overwrite,
+            )
             continue
 
         previous_speaker = get_speaker(sentence.previous)
         current_speaker = get_speaker(sentence)
 
         if previous_speaker == current_speaker:
-            sentence.add_feature("Turn_head", "False", overwrite=overwrite)
+            sentence.add_feature(
+                "Turn_head",
+                "False",
+                overwrite=overwrite,
+            )
         else:
             if previous_speaker == "None":
                 if get_speaker(sentence.previous.previous) == current_speaker:
-                    sentence.add_feature("Turn_head", "False", overwrite=overwrite)
+                    sentence.add_feature(
+                        "Turn_head",
+                        "False",
+                        overwrite=overwrite,
+                    )
                 else:
-                    sentence.add_feature("Turn_head", "True", overwrite=overwrite)
+                    sentence.add_feature(
+                        "Turn_head",
+                        "True",
+                        overwrite=overwrite,
+                    )
             else:
-                sentence.add_feature("Turn_head", "True", overwrite=overwrite)
+                sentence.add_feature(
+                    "Turn_head",
+                    "True",
+                    overwrite=overwrite,
+                )
 
 def tag_speakers(sentences,
                  overwrite=False):
