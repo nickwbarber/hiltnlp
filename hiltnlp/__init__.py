@@ -3,8 +3,6 @@
 import gatenlp
 import collections
 
-from . import cause_tagger
-
 
 first_reference_words = [
     "i",
