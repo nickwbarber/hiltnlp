@@ -143,17 +143,6 @@ def get_sentences(annotation_file):
     gatenlp.dlink(sentences)
     return sentences
 
-def get_intersecting_of_type(annotation,
-                             annotation_type,
-                             annotation_tree=None):
-    if not annotation_tree:
-        annotation_tree = annotation.annotation_file.interval_tree
-    return [
-        intersecting_annotation
-        for intersecting_annotation in annotation_tree.search(annotation)
-        if intersecting_annotation.type == annotation_type
-    ]
-
 def get_tokens(annotation_or_annotation_file):
     if type(annotation_or_annotation_file) == gatenlp.AnnotationFile:
         annotation_file = annotation_or_annotation_file
@@ -164,7 +153,7 @@ def get_tokens(annotation_or_annotation_file):
         ]
     if type(annotation_or_annotation_file) == gatenlp.Annotation:
         annotation = annotation_or_annotation_file
-        return get_intersecting_of_type(annotation, "Token")
+        return annotation.get_intersecting_of_type("Token")
 
 def get_turns(sentences,
               overwrite=False):
