@@ -143,6 +143,47 @@ def get_sentences(annotation_file):
     gatenlp.dlink(sentences)
     return sentences
 
+def get_near_sentences(sentence,
+                       distance=1,
+                       before=True,
+                       after=True):
+    if not (before or after):
+        return
+
+    desired_distance = distance
+
+    before_sentences = []
+    current_distance = 0
+    current_sentence = sentence
+    while current_distance < desired_distance:
+        previous_sentence = current_sentence.previous
+        if not previous_sentence:
+            break
+        before_sentences.append(previous_sentence)
+        current_distance += 1
+        current_sentence = previous_sentence
+
+    after_sentences = []
+    current_distance = 0
+    current_sentence = sentence
+    while current_distance < desired_distance:
+        next_sentence = current_sentence.next
+        if not next_sentence:
+            break
+        after_sentences.append(next_sentence)
+        current_distance += 1
+        current_sentence = next_sentence
+
+    near_sentences = []
+    if before:
+        for x in before_sentences:
+            near_sentences.append(x)
+    if after:
+        for x in after_sentences:
+            near_sentences.append(x)
+
+    return near_sentences
+
 def get_tokens(annotation_or_annotation_file):
     if type(annotation_or_annotation_file) == gatenlp.AnnotationFile:
         annotation_file = annotation_or_annotation_file
