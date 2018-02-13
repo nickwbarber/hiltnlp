@@ -144,11 +144,13 @@ def get_sentences(annotation_file):
     return sentences
 
 def get_intersecting_of_type(annotation,
-                             annotation_type):
-    tree = annotation.annotation_file.interval_tree
+                             annotation_type,
+                             annotation_tree=None):
+    if not annotation_tree:
+        annotation_tree = annotation.annotation_file.interval_tree
     return [
         intersecting_annotation
-        for intersecting_annotation in tree.search(annotation)
+        for intersecting_annotation in annotation_tree.search(annotation)
         if intersecting_annotation.type == annotation_type
     ]
 
