@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
+"""
+This package provides further abstraction on top of :mod:`gatenlp`, tailored to
+the needs of `the HiLT Lab at the University of North Texas
+<http://hilt.cse.unt.edu/>`_.
+"""
 
 import gatenlp
 import collections
 
 
+#: All of the words considered explicit to be first person references
 first_reference_words = [
     "i",
     "me",
@@ -16,6 +22,8 @@ first_reference_words = [
     "ours",
     "ourselves",
 ]
+
+#: All of the words considered explicit to be second person references
 second_reference_words = [
     "you",
     "your",
@@ -23,6 +31,8 @@ second_reference_words = [
     "yourself",
     "yourselves",
 ]
+
+#: All of the words considered explicit to be third person references
 third_reference_words = [
     "he",
     "him",
@@ -35,6 +45,14 @@ third_reference_words = [
 ]
 
 class Turn:
+    """
+    Abstraction of a linguistic `turn <https://glossary.sil.org/term/turn>`_
+    within a GATE annotation file of a HiLT transcript. More information about
+    how turns are notated can be found in the HiLT Transcription Guidelines.
+
+    :param sentences: The sentences of the conversation to be parsed into turns. The sentences must be :func:`doubly linked <gatenlp.dlink>`.
+    :type sentences: list(:class:`gatenlp.Annotation`)
+    """
     def __init__(self,
                  sentences):
         self._sentences = sentences
@@ -63,30 +81,68 @@ class Turn:
         self.sentences[key] = sentence
 
     def append(self, sentence):
+        """
+        Appends a sentence to this turn.
+
+        :param sentence: The sentence to append
+        :type sentence: :class:`gatenlp.Annotation`
+        """
         self.sentences.append(sentence)
 
     @property
     def start_node(self):
+        """
+        The offset corresponding to the beginning of this turn in the
+        annotation file's text.
+
+        :type: int
+        """
         return self.sentences[0].start_node
 
     @property
     def end_node(self):
+        """
+        The offset corresponding to the end of this turn in the annotation
+        file's text.
+        
+        :type: int
+        """
         return self.sentences[-1].end_node
 
     @property
     def speaker(self):
+        """
+        The speaker of this turn.
+
+        :type: string
+        """
         return self._speaker
 
     @property
     def sentences(self):
+        """
+        The sentences that comprise this turn.
+
+        :type: list(:class:`gatenlp.Annotation`)
+        """
         return self._sentences
 
     @property
     def next(self):
+        """
+        The next turn in the conversation.
+
+        :type: :class:`~hiltnlp.Turn`
+        """
         return self._next
 
     @property
     def previous(self):
+        """
+        The previous turn in the conversation.
+
+        :type: :class:`~hiltnlp.Turn`
+        """
         return self._previous
 
     @next.setter
@@ -112,12 +168,38 @@ def get_speaker(sentence):
 
 # TODO: complete is_complete
 def is_complete(sentence):
+    """
+    This function is currently incomplete (Ironic, huh?). Intended to determine
+    if the given *sentence* is grammatically complete.
+
+    :param sentence: The sentence.
+    :type sentence: :class:`gatenlp.Annotation`
+    :rtype: bool
+    """
     pass
 
 def is_turn_head(sentence):
+    """
+    Returns *True* if *sentence* begins a new turn. *sentence* must have a
+    feature called "Turn_head" with a string value of either "True" or "False".
+
+    :param sentence: The sentence.
+    :type sentence: :class:`gatenlp.Annotation`
+    :rtype: bool
+    """
     return sentence.features["Turn_head"].value == "True"
 
 def is_explicit_person_reference(token):
+    """
+    Returns *True* if the string of *token* is in
+    :data:`~hiltnlp.first_reference_words`,
+    :data:`~hiltnlp.second_reference_words`, or
+    :data:`~hiltnlp.third_reference_words`.
+
+    :param token: The token.
+    :type token: :class:`gatenlp.Annotation`
+    :rtype: bool
+    """
     return bool(
         token.text.lower() in (
             first_reference_words
@@ -127,6 +209,20 @@ def is_explicit_person_reference(token):
     )
 
 def get_grammatical_person(person_token):
+    """
+    Retrieves the `grammatical person
+    <https://en.wikipedia.org/wiki/Grammatical_person>`_ of *person_token*,
+    limited to either first, second, or third person. Currently limited to the
+    obvious pronouns listed in :data:`~hiltnlp.first_reference_words`,
+    :data:`~hiltnlp.second_reference_words`, and
+    :data:`~hiltnlp.third_reference_words`.
+
+    :param token: The token.
+    :type token: :class:`gatenlp.Annotation`
+
+    :returns: The grammatical person of *person_token*.
+    :rtype: int
+    """
     if person_token.text.lower() in first_reference_words:
         return 1
     if person_token.text.lower() in second_reference_words:
@@ -135,6 +231,16 @@ def get_grammatical_person(person_token):
         return 3
 
 def get_sentences(annotation_file):
+    """
+    Given a :class:`GATE annotation file <gatenlp.AnnotationFile>`, return its
+    contained sentences.
+
+    :param annotation_file: The annotation file.
+    :type annotation_file: :class:`gatenlp.AnnotationFile`
+
+    :returns: The sentences contained within *annotation_file*, :func:`doubly-linked <gatenlp.dlink>`.
+    :rtype: list(:class:`gatenlp.Annotation`)
+    """
     sentences = [
         annotation
         for annotation in annotation_file.annotations
@@ -147,6 +253,24 @@ def get_near_sentences(sentence,
                        distance=1,
                        before=True,
                        after=True):
+    """
+    Given *sentence*, return its surrounding sentences.
+
+    :returns: The nearby sentences.
+    :rtype: list(:class:`gatenlp.Annotation`)
+
+    :param sentence: The origin sentence.
+    :type sentence: :class:`gatenlp.Annotation`
+
+    :param distance: How far to collect sentences in terms of sentences.
+    :type distance: int
+
+    :param before: Seek before *sentence*.
+    :type before: bool
+
+    :param after: Seek after *sentence*.
+    :type after: bool
+    """
     if not (before or after):
         return
 
@@ -333,9 +457,6 @@ def tag_speakers(sentences,
         if ":" in text:
             speaker_tag = text.split(":")[0]
         sentence.add_feature("Speaker", speaker_tag, overwrite=overwrite)
-
-def test():
-    print("all good")
 
 if __name__ == "__main__":
 
