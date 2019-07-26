@@ -11,7 +11,7 @@ setup(
     license='MIT',
     packages=['hiltnlp'],
     install_requires=[
-        'gatenlp',
+        'gatenlp-hiltlab',
     ],
     zip_safe=False
 )

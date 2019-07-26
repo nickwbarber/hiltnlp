@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-This package provides further abstraction on top of :mod:`gatenlp`, tailored to
+This package provides further abstraction on top of :mod:`gatenlphiltlab`, tailored to
 the needs of `the HiLT Lab at the University of North Texas
 <http://hilt.cse.unt.edu/>`_.
 """
 
-import gatenlp
+import gatenlphiltlab
 import collections
 
 
@@ -50,8 +50,8 @@ class Turn:
     within a GATE annotation file of a HiLT transcript. More information about
     how turns are notated can be found in the HiLT Transcription Guidelines.
 
-    :param sentences: The sentences of the conversation to be parsed into turns. The sentences must be :func:`doubly linked <gatenlp.dlink>`.
-    :type sentences: list(:class:`gatenlp.Annotation`)
+    :param sentences: The sentences of the conversation to be parsed into turns. The sentences must be :func:`doubly linked <gatenlphiltlab.dlink>`.
+    :type sentences: list(:class:`gatenlphiltlab.Annotation`)
     """
     def __init__(self,
                  sentences):
@@ -85,7 +85,7 @@ class Turn:
         Appends a sentence to this turn.
 
         :param sentence: The sentence to append
-        :type sentence: :class:`gatenlp.Annotation`
+        :type sentence: :class:`gatenlphiltlab.Annotation`
         """
         self.sentences.append(sentence)
 
@@ -123,7 +123,7 @@ class Turn:
         """
         The sentences that comprise this turn.
 
-        :type: list(:class:`gatenlp.Annotation`)
+        :type: list(:class:`gatenlphiltlab.Annotation`)
         """
         return self._sentences
 
@@ -173,7 +173,7 @@ def is_complete(sentence):
     if the given *sentence* is grammatically complete.
 
     :param sentence: The sentence.
-    :type sentence: :class:`gatenlp.Annotation`
+    :type sentence: :class:`gatenlphiltlab.Annotation`
     :rtype: bool
     """
     pass
@@ -184,7 +184,7 @@ def is_turn_head(sentence):
     feature called "Turn_head" with a string value of either "True" or "False".
 
     :param sentence: The sentence.
-    :type sentence: :class:`gatenlp.Annotation`
+    :type sentence: :class:`gatenlphiltlab.Annotation`
     :rtype: bool
     """
     return sentence.features["Turn_head"].value == "True"
@@ -197,7 +197,7 @@ def is_explicit_person_reference(token):
     :data:`~hiltnlp.third_reference_words`.
 
     :param token: The token.
-    :type token: :class:`gatenlp.Annotation`
+    :type token: :class:`gatenlphiltlab.Annotation`
     :rtype: bool
     """
     return bool(
@@ -218,7 +218,7 @@ def get_grammatical_person(person_token):
     :data:`~hiltnlp.third_reference_words`.
 
     :param token: The token.
-    :type token: :class:`gatenlp.Annotation`
+    :type token: :class:`gatenlphiltlab.Annotation`
 
     :returns: The grammatical person of *person_token*.
     :rtype: int
@@ -232,21 +232,21 @@ def get_grammatical_person(person_token):
 
 def get_sentences(annotation_file):
     """
-    Given a :class:`GATE annotation file <gatenlp.AnnotationFile>`, return its
+    Given a :class:`GATE annotation file <gatenlphiltlab.AnnotationFile>`, return its
     contained sentences.
 
     :param annotation_file: The annotation file.
-    :type annotation_file: :class:`gatenlp.AnnotationFile`
+    :type annotation_file: :class:`gatenlphiltlab.AnnotationFile`
 
-    :returns: The sentences contained within *annotation_file*, :func:`doubly-linked <gatenlp.dlink>`.
-    :rtype: list(:class:`gatenlp.Annotation`)
+    :returns: The sentences contained within *annotation_file*, :func:`doubly-linked <gatenlphiltlab.dlink>`.
+    :rtype: list(:class:`gatenlphiltlab.Annotation`)
     """
     sentences = [
         annotation
         for annotation in annotation_file.annotations
         if annotation.type.lower() == "sentence"
     ]
-    gatenlp.dlink(sentences)
+    gatenlphiltlab.dlink(sentences)
     return sentences
 
 def get_near_sentences(sentence,
@@ -257,10 +257,10 @@ def get_near_sentences(sentence,
     Given *sentence*, return its surrounding sentences.
 
     :returns: The nearby sentences.
-    :rtype: list(:class:`gatenlp.Annotation`)
+    :rtype: list(:class:`gatenlphiltlab.Annotation`)
 
     :param sentence: The origin sentence.
-    :type sentence: :class:`gatenlp.Annotation`
+    :type sentence: :class:`gatenlphiltlab.Annotation`
 
     :param distance: How far to collect sentences in terms of sentences.
     :type distance: int
@@ -309,14 +309,14 @@ def get_near_sentences(sentence,
     return near_sentences
 
 def get_tokens(annotation_or_annotation_file):
-    if type(annotation_or_annotation_file) == gatenlp.AnnotationFile:
+    if type(annotation_or_annotation_file) == gatenlphiltlab.AnnotationFile:
         annotation_file = annotation_or_annotation_file
         return [
             annotation
             for annotation in annotation_file.annotations
             if annotation.type == "Token"
         ]
-    if type(annotation_or_annotation_file) == gatenlp.Annotation:
+    if type(annotation_or_annotation_file) == gatenlphiltlab.Annotation:
         annotation = annotation_or_annotation_file
         return annotation.get_intersecting_of_type("Token")
 
@@ -343,7 +343,7 @@ def get_turns(sentences,
     if turn_sentences:
         turns.append(Turn(turn_sentences))
 
-    gatenlp.dlink(turns)
+    gatenlphiltlab.dlink(turns)
 
     # for turn in turns:
         # if not is_complete(turn[-1]):
@@ -427,7 +427,7 @@ def tag_speakers(sentences,
     """
 
     assert all(
-        type(sentence) == gatenlp.Annotation
+        type(sentence) == gatenlphiltlab.Annotation
         for sentence in sentences
     )
 
@@ -472,7 +472,7 @@ if __name__ == "__main__":
     sentence_terminals = set()
     for annotation_file_path in annotation_file_paths:
 
-        annotation_file = gatenlp.AnnotationFile(annotation_file_path)
+        annotation_file = gatenlphiltlab.AnnotationFile(annotation_file_path)
         annotations = annotation_file.annotations
         sentences = (
             annotation
@@ -482,7 +482,7 @@ if __name__ == "__main__":
         sentences = sorted(
             sentences, key=lambda x: x.start_node
         )
-        gatenlp.dlink(sentences)
+        gatenlphiltlab.dlink(sentences)
 
         for sentence in sentences:
             if len(sentence) == 3:

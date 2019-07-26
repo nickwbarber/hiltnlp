@@ -2,7 +2,7 @@
 
 import os
 import argparse
-import gatenlp
+import gatenlphiltlab
 import hiltnlp
 import Levenshtein
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     for annotation_file_path in args.annotation_files:
 
-        annotation_file = gatenlp.AnnotationFile(annotation_file_path)
+        annotation_file = gatenlphiltlab.AnnotationFile(annotation_file_path)
         tokens = hiltnlp.get_tokens(annotation_file)
 
         causal_words_set = annotation_file.create_annotation_set("causal_words")
