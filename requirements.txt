@@ -1,6 +1,6 @@
 alabaster==0.7.10
 Babel==2.5.3
-certifi==2017.11.5
+certifi==2022.12.7
 chardet==3.0.4
 docutils==0.14
 -e git+https://github.com/nickwbarber/gatenlp.git@c84ed9234922389e05720c56638c2dd465b0d9b4#egg=gatenlp
